@@ -33,6 +33,9 @@ This project is partially inspired by Chris Titus's Wintool.\
 
 Copy the repo, sudo make install
 
+
+How linuxfromscratch does it.
+
 # Package installation
 
 ## Package configuration
