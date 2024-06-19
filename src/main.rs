@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 #![allow(unused)]
-extern crate tempdir;
-// extern crate reqwest;
 
 use std::fs::File;
 use std::path::PathBuf;
@@ -13,7 +11,6 @@ mod download;
 use download::*;
 
 
-// How should this be downloaded / Installed
 enum InstallMethodEnum {
     Git,
     Targz
@@ -27,6 +24,7 @@ struct Package<'a> {
 }
 
 
+
 fn main() {
     // Testing with libnotify package
     let libnotify = Package {   
@@ -35,7 +33,10 @@ fn main() {
         instal_method:  InstallMethodEnum::Targz
     };
 
+    // List of packages to install
     let selected = vec![libnotify];
+
+    // Open Temp Directory
     run_in_temp_dir(selected);
 
 
@@ -51,26 +52,33 @@ fn main() {
 
 
 
+// read stdin to pause execution for testing
+fn pause() {
+    let mut buffer = String::new();
+    std::io::stdin()
+        .read_line(&mut buffer)
+        .expect("Failed to read line");
+
+}
 
 
 
 fn run_in_temp_dir(selected :Vec<Package>) -> Result<(), io::Error> {
     // Create a directory inside of `std::env::temp_dir()`, named with
-    // the prefix "example".
-    let mut tmp_dir = TempDir::new("ItJustWorks").expect("no again");
-    let file_path = tmp_dir.path().join("my-temporary-note.tar.gz");
+    // the prefix "ItJustWorks".
+    let mut tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
+
 
 
     for package in selected {
+        // download each package
+        download_files(package.sourcecode_link , package.name, &tmp_dir);
+        //                    link                 name         path
 
-        // TODO : Find a way to turn the filepath (type PathBuf) into File
-        download_files(&package.sourcecode_link, &mut file_path);
+        pause()
     }
 
-    // been deleted successfully. If we don't close it explicitly,
-    // the directory will still be deleted when `tmp_dir` goes out
-    // of scope, but we won't know whether deleting the directory
-    // succeeded.
+
 
     Ok(())
 }
