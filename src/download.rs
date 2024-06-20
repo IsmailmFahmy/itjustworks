@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 use std::fs::File;
 use std::io::Cursor;
 use std::io;
@@ -7,15 +7,27 @@ use tempdir::TempDir;
 
 
 #[tokio::main]
-pub async fn download_files( link : &str, name :&str, path: &TempDir) -> Result<()> {
+pub async fn download_files( link : &str, path: &TempDir) -> Result<PathBuf> {
 
-    let mut file_path = File::create(path.path().join(name)).unwrap();
     // create full path + Filename
 
     println!("started function...");
 
     let response = reqwest::get(link).await?;
 
+    let file_name = response
+        .url()
+        .path_segments()
+        .and_then(|segments| segments.last())
+        .and_then(|name| if name.is_empty() { None } else { Some(name) })
+        .unwrap_or("tmp.bin");
+
+    println!("file to download: '{}'", file_name);
+    let file_name = path.path().join(file_name);
+    println!("will be located under: '{:?}'", file_name);
+
+
+    let mut file_path = File::create(&file_name).expect("could not create file");
 
 
 
@@ -24,6 +36,6 @@ pub async fn download_files( link : &str, name :&str, path: &TempDir) -> Result<
     io::copy(&mut content, &mut file_path).unwrap();
     println!("File downloaded successfully! at {:?}", file_path);
 
-    Ok(())
+    Ok(file_name)
 }
 

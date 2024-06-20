@@ -2,14 +2,17 @@
 #![allow(unused)]
 
 use std::fs::File;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::io;
 use tempdir::TempDir;
+use zip_extract;
 
 
 mod download;
 use download::*;
 
+mod extract;
+use extract::*;
 
 enum InstallMethodEnum {
     Git,
@@ -30,6 +33,7 @@ fn main() {
     let libnotify = Package {   
         name: "libnotify",
         sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
+        // sourcecode_link : "https://github.com/IsmailmFahmy/nvim/archive/refs/heads/main.zip",
         instal_method:  InstallMethodEnum::Targz
     };
 
@@ -52,6 +56,10 @@ fn main() {
 
 
 
+
+
+
+
 // read stdin to pause execution for testing
 fn pause() {
     let mut buffer = String::new();
@@ -60,6 +68,7 @@ fn pause() {
         .expect("Failed to read line");
 
 }
+
 
 
 
@@ -72,14 +81,32 @@ fn run_in_temp_dir(selected :Vec<Package>) -> Result<(), io::Error> {
 
     for package in selected {
         // download each package
-        download_files(package.sourcecode_link , package.name, &tmp_dir);
-        //                    link                 name         path
+        let downloaded_file_path : PathBuf = download_files(package.sourcecode_link , &tmp_dir).unwrap();
+        //                                                         link                 path
 
-        pause()
+
+
+        println!("after downloading, the downloaded file path is : {:?}",downloaded_file_path);
+        pause();
+
+        
+        let extract_dir = tmp_dir.path();
+
+        // extract_zip(&downloaded_file_path, &extract_dir);
+        extract_tar_xz(&downloaded_file_path, &extract_dir);
+
+        println!("extracting file in {:?}", extract_dir);
+
+        pause();
+
     }
 
 
 
     Ok(())
 }
+
+
+
+
 
