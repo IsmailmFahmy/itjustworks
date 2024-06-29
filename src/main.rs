@@ -14,6 +14,10 @@ use download::*;
 mod extract;
 use extract::*;
 
+mod checks;
+
+
+
 enum InstallMethodEnum {
     Git,
     Targz
@@ -30,19 +34,22 @@ struct Package<'a> {
 
 fn main() {
     // Testing with libnotify package
-    let libnotify = Package {   
-        name: "libnotify",
-        sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
-        // sourcecode_link : "https://github.com/IsmailmFahmy/nvim/archive/refs/heads/main.zip",
-        instal_method:  InstallMethodEnum::Targz
-    };
+    // let libnotify = Package {   
+    //     name: "libnotify",
+    //     sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
+    //     // sourcecode_link : "https://github.com/IsmailmFahmy/nvim/archive/refs/heads/main.zip",
+    //     instal_method:  InstallMethodEnum::Targz
+    // };
+    //
+    // // List of packages to install
+    // let selected = vec![libnotify];
+    //
+    // // Open Temp Directory
+    // run_in_temp_dir(selected);
 
-    // List of packages to install
-    let selected = vec![libnotify];
 
-    // Open Temp Directory
-    run_in_temp_dir(selected);
-
+    checks::testie();
+    checks::check_dependencies()
 
 
     // For testing download_files function (It doesn't work lol)
@@ -87,17 +94,16 @@ fn run_in_temp_dir(selected :Vec<Package>) -> Result<(), io::Error> {
 
 
         println!("after downloading, the downloaded file path is : {:?}",downloaded_file_path);
-        pause();
+        // pause();
 
         
         let extract_dir = tmp_dir.path();
 
-        // extract_zip(&downloaded_file_path, &extract_dir);
         extract_tar_xz(&downloaded_file_path, &extract_dir);
 
         println!("extracting file in {:?}", extract_dir);
 
-        pause();
+        // pause();
 
     }
 
@@ -105,6 +111,7 @@ fn run_in_temp_dir(selected :Vec<Package>) -> Result<(), io::Error> {
 
     Ok(())
 }
+
 
 
 
