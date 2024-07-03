@@ -47,7 +47,7 @@ printers, nvidia drivers
 	- Make
 
 
-# How It Just Work`s
+# How It Just Works
 ## Create temporary directory
 ## Download source files
 ## Compile source files

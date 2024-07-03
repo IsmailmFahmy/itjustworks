@@ -16,53 +16,62 @@ use extract::*;
 
 mod checks;
 
-
-
-enum InstallMethodEnum {
-    Git,
-    Targz
-}
-
-
-struct Package<'a> {
-    name: &'a str,
-    sourcecode_link: &'a str,
-    instal_method : InstallMethodEnum
-}
+mod packages;
+use packages::*;
 
 
 
-fn main() {
+fn main() -> Result<(), io::Error> {
+
     // Testing with libnotify package
-    // let libnotify = Package {   
-    //     name: "libnotify",
-    //     sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
-    //     // sourcecode_link : "https://github.com/IsmailmFahmy/nvim/archive/refs/heads/main.zip",
-    //     instal_method:  InstallMethodEnum::Targz
-    // };
-    //
-    // // List of packages to install
-    // let selected = vec![libnotify];
-    //
-    // // Open Temp Directory
-    // run_in_temp_dir(selected);
+    let libnotify = Package {   
+        name: "libnotify",
+        sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
+        instal_method:  InstallMethodEnum::Targz
+    };
 
 
-    checks::testie();
-    checks::check_dependencies()
+
+    todo!("select_packages");
+
+    let selected = vec![libnotify];
 
 
-    // For testing download_files function (It doesn't work lol)
-
-    // let mut file = File::create("/home/fahmy/Hello.tar.xz").unwrap();
-    // download_files(libnotify.sourcecode_link, &mut file);
 
 
+
+    // Create a directory inside of `std::env::temp_dir()`, named with
+    // the prefix "ItJustWorks".
+    let mut tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
+
+
+
+    // List of packages to install
+
+    for package in selected {
+        // download each package                                   link                 path
+        let downloaded_file_path : PathBuf = download_files(package.sourcecode_link , &tmp_dir).unwrap();
+
+
+        println!("after downloading, the downloaded file path is : {:?}",downloaded_file_path);
+
+        let extract_dir = tmp_dir.path();
+
+        match package.instal_method {
+            InstallMethodEnum::Targz => extract_tar_xz(&downloaded_file_path, &extract_dir),
+            InstallMethodEnum::Git  => todo!("do!"),
+        };
+        
+
+        println!("extracting file in {:?}", extract_dir);
+
+
+    }
+
+
+
+    Ok(())
 }
-
-
-
-
 
 
 
@@ -75,45 +84,5 @@ fn pause() {
         .expect("Failed to read line");
 
 }
-
-
-
-
-fn run_in_temp_dir(selected :Vec<Package>) -> Result<(), io::Error> {
-    // Create a directory inside of `std::env::temp_dir()`, named with
-    // the prefix "ItJustWorks".
-    let mut tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
-
-
-
-    for package in selected {
-        // download each package
-        let downloaded_file_path : PathBuf = download_files(package.sourcecode_link , &tmp_dir).unwrap();
-        //                                                         link                 path
-
-
-
-        println!("after downloading, the downloaded file path is : {:?}",downloaded_file_path);
-        // pause();
-
-        
-        let extract_dir = tmp_dir.path();
-
-        extract_tar_xz(&downloaded_file_path, &extract_dir);
-
-        println!("extracting file in {:?}", extract_dir);
-
-        // pause();
-
-    }
-
-
-
-    Ok(())
-}
-
-
-
-
 
 
