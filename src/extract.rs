@@ -5,9 +5,26 @@ use tempdir::TempDir;
 use tar::Archive;
 use xz2::read::XzDecoder;
 
+use zip_extract;
+use crate::packages::ExtractMethodEnum;
 
 
-pub fn extract_tar_xz(file_from: &Path, file_to: &Path) -> io::Result<()> {
+pub fn extract_package(method: ExtractMethodEnum, downloaded_file_path :&PathBuf, extract_dir: &Path) -> Result<(), zip_extract::ZipError> {
+use crate::ExtractMethodEnum::*;
+
+    // TODO!! Support more extentions
+    match method {
+        Zip => extract_zip(downloaded_file_path, extract_dir),
+        Tarxz => extract_tar_xz(downloaded_file_path, extract_dir),
+        // Git  => {},
+        // Targz  => {}
+
+    };
+
+    Ok(())
+}
+
+fn extract_tar_xz(file_from: &Path, file_to: &Path) -> io::Result<()> {
     // Open the .tar.xz file
     let file = File::open(file_from)?;
     let buf_reader = BufReader::new(file);
@@ -25,8 +42,10 @@ pub fn extract_tar_xz(file_from: &Path, file_to: &Path) -> io::Result<()> {
 }
 
 
-pub fn extract_zip(file_to_extract : &Path, destination : &Path) {
+fn extract_zip(file_to_extract : &Path, destination : &Path)-> io::Result<()>  {
 
     let file_to_extract = File::open(file_to_extract).unwrap();
-    zip_extract::extract(file_to_extract, destination, true).expect("could not extract")
+
+    zip_extract::extract(file_to_extract, destination, true).expect("could not extract");
+    Ok(())
 }

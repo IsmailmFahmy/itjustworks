@@ -1,12 +1,14 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
+use tempdir::TempDir;
+
+mod error_handelling;
+
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::io;
-use tempdir::TempDir;
-use zip_extract;
-
+use std::env;
 
 mod download;
 use download::*;
@@ -19,22 +21,39 @@ mod checks;
 mod packages;
 use packages::*;
 
-
+mod install;
+use crate::install::compile::install_package;
 
 fn main() -> Result<(), io::Error> {
 
     // Testing with libnotify package
-    let libnotify = Package {   
-        name: "libnotify",
-        sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
-        instal_method:  InstallMethodEnum::Targz
+    // let libnotify = Package {   
+    //     name: "libnotify",
+    //     sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
+    //     extract_method:  ExtractMethodEnum::Targz,
+    //     instal_method : InstallMethodEnum::MakeInstall
+    //
+    // };
+
+
+    let htop = Package {
+        name: "htop",
+        sourcecode_link: "https://github.com/htop-dev/htop/archive/refs/heads/main.zip",
+        extract_method: ExtractMethodEnum::Zip,
+        instal_method: InstallMethodEnum::AutoGen
+    };
+
+    let tmux = Package {
+        name: "tmux",
+        sourcecode_link: "https://github.com/tmux/tmux/archive/refs/heads/master.zip",
+        extract_method: ExtractMethodEnum::Zip,
+        instal_method: InstallMethodEnum::AutoGen
     };
 
 
+    // todo!("select_packages");
 
-    todo!("select_packages");
-
-    let selected = vec![libnotify];
+    let selected = vec![tmux];
 
 
 
@@ -45,28 +64,31 @@ fn main() -> Result<(), io::Error> {
     let mut tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
 
 
-
-    // List of packages to install
-
     for package in selected {
-        // download each package                                   link                 path
-        let downloaded_file_path : PathBuf = download_files(package.sourcecode_link , &tmp_dir).unwrap();
+        // download each package                         link                 path
+        let downloaded_file_path = download_files(package.sourcecode_link , &tmp_dir)
+            .expect(format!("Failed to download the {} package", package.name).as_str());
 
 
-        println!("after downloading, the downloaded file path is : {:?}",downloaded_file_path);
+        let working_path = tmp_dir.path();
 
-        let extract_dir = tmp_dir.path();
+        env::set_current_dir(&working_path);
 
-        match package.instal_method {
-            InstallMethodEnum::Targz => extract_tar_xz(&downloaded_file_path, &extract_dir),
-            InstallMethodEnum::Git  => todo!("do!"),
-        };
+        extract_package(package.extract_method, &downloaded_file_path, &working_path.join(package.name))
+            .expect(format!("Failed to extract the {} package", package.name).as_str());
+
+
+        println!("extracted package");
+
+        //change directory to the extracted package
+        env::set_current_dir(&working_path.join(package.name));
+
+
+        install_package(package.instal_method);
+
         
-
-        println!("extracting file in {:?}", extract_dir);
-
-
     }
+
 
 
 
@@ -76,13 +98,17 @@ fn main() -> Result<(), io::Error> {
 
 
 
-// read stdin to pause execution for testing
+
+
+
+
+
+// read stdin to pause execution for debugging
 fn pause() {
+    println!("Pausing... Please press ENTER to continue excecution");
     let mut buffer = String::new();
     std::io::stdin()
         .read_line(&mut buffer)
         .expect("Failed to read line");
 
 }
-
-
