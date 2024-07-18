@@ -43,7 +43,7 @@ fn main() -> Result<(), io::Error> {
         instal_method: InstallMethodEnum::AutoGen
     };
 
-    let package = Package {
+    let tmux = Package {
         name: "tmux",
         sourcecode_link: "https://github.com/tmux/tmux/releases/download/3.4/tmux-3.4.tar.gz",
         extract_method: ExtractMethodEnum::Targz,

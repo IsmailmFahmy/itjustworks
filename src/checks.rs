@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused)]
 extern crate os_type;
-use std::process::{Command, exit};
+use std::process::{Output, Command, exit};
 use std::path::Path;
+use std::io;
 
 
 // ----------------------- Public Functions -----------------------
@@ -36,7 +37,7 @@ fn check_init() -> Result<InitSystem, String> {
 
     
     for (system, command) in init_systems {
-        // If the path to the services exists
+        // If the path to the services exists, return that service
         if system == InitSystem::S6 || system == InitSystem::Runit {
             if Path::new(command).exists() {
                 return Ok(system)
@@ -44,19 +45,24 @@ fn check_init() -> Result<InitSystem, String> {
         }
 
         // For each init system, if it's respective command exists, then thats the init system
-        if Command::new("sh")
-            .arg("-c")
-            .arg(format!("command -v {}", command))
-            .output()
-            .expect("Failed to check for command")
+        if cmd(command)
+            .unwrap()
             .status
-            .success() == false {
+            .success() == true {
                 return Ok(system)
         }         
     }
-    Err("Could not identify InitSystem".to_string())
+    Err("Could not identify InitSystem. Services will not be enabled. Please enable them manually".to_string())
 }
 
+
+fn cmd(command: &str) -> Result<Output, io::Error>{
+    Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()
+
+}
 
 
 fn check_dependencies() -> bool {
