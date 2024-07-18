@@ -27,13 +27,13 @@ use crate::install::compile::install_package;
 fn main() -> Result<(), io::Error> {
 
     // Testing with libnotify package
-    // let libnotify = Package {   
-    //     name: "libnotify",
-    //     sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
-    //     extract_method:  ExtractMethodEnum::Targz,
-    //     instal_method : InstallMethodEnum::MakeInstall
-    //
-    // };
+    let libnotify = Package {   
+        name: "libnotify",
+        sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
+        extract_method:  ExtractMethodEnum::Tarxz,
+        instal_method : InstallMethodEnum::MakeInstall
+
+    };
 
 
     let htop = Package {
@@ -59,7 +59,7 @@ fn main() -> Result<(), io::Error> {
     };
     // todo!("select_packages");
 
-    let selected = vec![tmux];
+    let selected = vec![libnotify];
 
 
 

@@ -1,9 +1,11 @@
+// use std::fs;
 use std::fs::File;
 use std::io::{self, BufReader};
 use std::path::{Path, PathBuf};
-use tar::Archive;
 use xz2::read::XzDecoder;
 use flate2::read::GzDecoder;
+use tar::Archive;
+// use archive::Archive;
 
 use zip_extract;
 use crate::packages::ExtractMethodEnum;
@@ -46,12 +48,34 @@ fn extract_tar_xz(file_from: &Path, file_to: &Path) -> io::Result<()> {
 }
 
 
-fn extract_tar_gz(file_from: &Path, _file_to: &Path) -> Result<(), io::Error> {
+fn extract_tar_gz(file_from: &Path, file_to: &Path) -> Result<(), io::Error> {
 
-    let tar_gz = File::open(file_from)?;
-    let tar = GzDecoder::new(tar_gz);
-    let mut archive = Archive::new(tar);
-    archive.unpack(".")?;
+    let file = File::open(file_from)?;
+    let mut archive = Archive::new(GzDecoder::new(file));
+
+    // Extract the archive to the target directory
+    for entry in archive.entries()? {
+        let mut entry = entry?;
+        let path = entry.path()?;
+        
+        let m = path.components().skip(1).collect::<std::path::PathBuf>();
+        // Strip the top-level directory from the path
+        let path = match m.to_str() {
+            Some(p) => p,
+            None => continue,
+        };
+
+        // Create the full path to the target directory
+        let full_path = Path::new(file_to).join(path);
+
+                // Create parent directories if needed
+        if let Some(parent) = full_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        
+        // Unpack the file
+        entry.unpack(full_path)?;
+    }
     Ok(())
 }
 

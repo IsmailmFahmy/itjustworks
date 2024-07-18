@@ -20,7 +20,7 @@ fn autogen_install() -> Result<String, String>  {
     // Run ./autogen.sh && ./configure && make
     let output = Command::new("sh")
         .arg("-c")
-        .arg("./autogen.sh && ./configure && make")
+        .arg("./autogen.sh; ./configure && make && sudo make install")
         .output() // collect ouput
         .map_err(|e| format!("Failed to Execute shell command: \t {}", e))?; // format error
 

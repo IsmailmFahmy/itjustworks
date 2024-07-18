@@ -14,3 +14,5 @@ tokio = { version = "1", features = ["full"] }
 zip-extract = {version = "0.1", features = ["deflate-zlib"]}
 os_type = "2.6.0"
 flate2 = "1.0.30"
+# archive = "0.1"
+# decompress = "0.1.0"
