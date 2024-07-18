@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::io;
 use std::env;
 
-mod download;
+pub mod download;
 use download::*;
 
 mod extract;
@@ -43,14 +43,20 @@ fn main() -> Result<(), io::Error> {
         instal_method: InstallMethodEnum::AutoGen
     };
 
-    let tmux = Package {
+    let package = Package {
         name: "tmux",
-        sourcecode_link: "https://github.com/tmux/tmux/archive/refs/heads/master.zip",
-        extract_method: ExtractMethodEnum::Zip,
+        sourcecode_link: "https://github.com/tmux/tmux/releases/download/3.4/tmux-3.4.tar.gz",
+        extract_method: ExtractMethodEnum::Targz,
         instal_method: InstallMethodEnum::AutoGen
     };
 
 
+    let bluetooth = Package {
+        name : "bluez",
+        sourcecode_link : "http://www.kernel.org/pub/linux/bluetooth/bluez-5.66.tar.xz",
+        extract_method : ExtractMethodEnum::Tarxz,
+        instal_method: InstallMethodEnum::AutoGen
+    };
     // todo!("select_packages");
 
     let selected = vec![tmux];
@@ -65,6 +71,9 @@ fn main() -> Result<(), io::Error> {
 
 
     for package in selected {
+
+        let sys = checks::get_sysinfo();
+        println!("{:?}", sys);
         // download each package                         link                 path
         let downloaded_file_path = download_files(package.sourcecode_link , &tmp_dir)
             .expect(format!("Failed to download the {} package", package.name).as_str());
@@ -84,7 +93,9 @@ fn main() -> Result<(), io::Error> {
         env::set_current_dir(&working_path.join(package.name));
 
 
+        pause();
         install_package(package.instal_method);
+        println!("package installed");
 
         
     }

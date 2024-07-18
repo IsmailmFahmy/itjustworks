@@ -1,7 +1,6 @@
 use crate::packages::InstallMethodEnum;
 use crate::error_handelling::handle;
 use std::process::Command;
-use std::io::{self, Write};
 
 
 
@@ -9,7 +8,7 @@ pub fn install_package(method: InstallMethodEnum) -> Result<(), String> {
     // todo!("Make an error type for Install package function");
     use InstallMethodEnum::*;
     match method {
-        MakeInstall => {},
+        MakeInstall => handle(make_install(), false),
         AutoGen => handle(autogen_install(), false)
     };
     Ok(())
@@ -35,7 +34,7 @@ fn autogen_install() -> Result<String, String>  {
 }
 
 
-fn make_install() -> Result<(), String> {
+fn make_install() -> Result<String, String> {
 
     // run make command
     let make_output = Command::new("make")
@@ -60,6 +59,6 @@ fn make_install() -> Result<(), String> {
     if !make_output.status.success() || !install_output.status.success() {
         return Err(format!("{}\n{}", make_err, install_err));
     }
+    Ok(String::from_utf8_lossy(&install_output.stdout).to_string())
 
-    Ok(())
 }

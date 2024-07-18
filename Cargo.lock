@@ -659,6 +659,7 @@ checksum = "8f518f335dce6725a761382244631d86cf0ccb2863413590b31338feb467f9c3"
 name = "itjustworks"
 version = "0.1.0"
 dependencies = [
+ "flate2",
  "os_type",
  "reqwest",
  "tar",

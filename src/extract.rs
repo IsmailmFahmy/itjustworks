@@ -1,23 +1,27 @@
 use std::fs::File;
 use std::io::{self, BufReader};
 use std::path::{Path, PathBuf};
-use tempdir::TempDir;
 use tar::Archive;
 use xz2::read::XzDecoder;
+use flate2::read::GzDecoder;
 
 use zip_extract;
 use crate::packages::ExtractMethodEnum;
 
 
+
+
+
+
 pub fn extract_package(method: ExtractMethodEnum, downloaded_file_path :&PathBuf, extract_dir: &Path) -> Result<(), zip_extract::ZipError> {
-use crate::ExtractMethodEnum::*;
+use ExtractMethodEnum::*;
 
     // TODO!! Support more extentions
-    match method {
+    let _ = match method {
         Zip => extract_zip(downloaded_file_path, extract_dir),
         Tarxz => extract_tar_xz(downloaded_file_path, extract_dir),
         // Git  => {},
-        // Targz  => {}
+        Targz  => extract_tar_gz(downloaded_file_path, extract_dir),
 
     };
 
@@ -40,6 +44,17 @@ fn extract_tar_xz(file_from: &Path, file_to: &Path) -> io::Result<()> {
     
     Ok(())
 }
+
+
+fn extract_tar_gz(file_from: &Path, _file_to: &Path) -> Result<(), io::Error> {
+
+    let tar_gz = File::open(file_from)?;
+    let tar = GzDecoder::new(tar_gz);
+    let mut archive = Archive::new(tar);
+    archive.unpack(".")?;
+    Ok(())
+}
+
 
 
 fn extract_zip(file_to_extract : &Path, destination : &Path)-> io::Result<()>  {

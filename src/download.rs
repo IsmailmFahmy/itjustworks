@@ -1,4 +1,4 @@
-use std::path::{PathBuf, Path};
+use std::path::PathBuf;
 use std::fs::File;
 use std::io::Cursor;
 use std::io;
