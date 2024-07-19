@@ -4,7 +4,7 @@ use std::process::Command;
 
 
 
-pub fn install_package(method: InstallMethodEnum) -> Result<(), String> {
+pub fn install_package(method: &InstallMethodEnum) -> Result<(), String> {
     // todo!("Make an error type for Install package function");
     use InstallMethodEnum::*;
     match method {

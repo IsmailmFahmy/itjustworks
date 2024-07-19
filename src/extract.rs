@@ -15,7 +15,7 @@ use crate::packages::ExtractMethodEnum;
 
 
 
-pub fn extract_package(method: ExtractMethodEnum, downloaded_file_path :&PathBuf, extract_dir: &Path) -> Result<(), zip_extract::ZipError> {
+pub fn extract_package(method: &ExtractMethodEnum, downloaded_file_path :&PathBuf, extract_dir: &Path) -> Result<(), zip_extract::ZipError> {
 use ExtractMethodEnum::*;
 
     // TODO!! Support more extentions

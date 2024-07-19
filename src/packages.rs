@@ -18,5 +18,6 @@ pub struct Package<'a> {
     pub name: &'a str,
     pub sourcecode_link: &'a str,
     pub extract_method : ExtractMethodEnum,
-    pub instal_method : InstallMethodEnum
+    pub instal_method : InstallMethodEnum,
+    pub service: Option<&'a str>,
 }

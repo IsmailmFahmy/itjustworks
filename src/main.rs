@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
+use crate::checks::{InitSystem, SysInfo};
 use tempdir::TempDir;
 
 mod error_handelling;
@@ -9,6 +10,7 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::io;
 use std::env;
+use std::process::Output;
 
 pub mod download;
 use download::*;
@@ -31,23 +33,36 @@ fn main() -> Result<(), io::Error> {
         name: "libnotify",
         sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
         extract_method:  ExtractMethodEnum::Tarxz,
-        instal_method : InstallMethodEnum::MakeInstall
+        instal_method : InstallMethodEnum::MakeInstall,
+        service: None,
 
     };
 
+
+    let cups = Package {
+        name : "cups",
+        sourcecode_link: "https://github.com/OpenPrinting/cups/archive/refs/heads/master.zip",
+        extract_method: ExtractMethodEnum::Zip,
+        instal_method: InstallMethodEnum::AutoGen,
+        service: Some("cups.service")
+    };
 
     let htop = Package {
         name: "htop",
         sourcecode_link: "https://github.com/htop-dev/htop/archive/refs/heads/main.zip",
         extract_method: ExtractMethodEnum::Zip,
-        instal_method: InstallMethodEnum::AutoGen
+        instal_method: InstallMethodEnum::AutoGen,
+        service: None
+        
     };
 
     let tmux = Package {
         name: "tmux",
         sourcecode_link: "https://github.com/tmux/tmux/releases/download/3.4/tmux-3.4.tar.gz",
         extract_method: ExtractMethodEnum::Targz,
-        instal_method: InstallMethodEnum::AutoGen
+        instal_method: InstallMethodEnum::AutoGen,
+        service: None
+
     };
 
 
@@ -55,13 +70,14 @@ fn main() -> Result<(), io::Error> {
         name : "bluez",
         sourcecode_link : "http://www.kernel.org/pub/linux/bluetooth/bluez-5.66.tar.xz",
         extract_method : ExtractMethodEnum::Tarxz,
-        instal_method: InstallMethodEnum::AutoGen
+        instal_method: InstallMethodEnum::AutoGen,
+        service: Some("bluetooth.service")
+
+
     };
     // todo!("select_packages");
 
-    let selected = vec![libnotify];
-
-
+    let selected = vec![cups];
 
 
 
@@ -69,11 +85,12 @@ fn main() -> Result<(), io::Error> {
     // the prefix "ItJustWorks".
     let mut tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
 
+    let sysinfo = SysInfo::new(); // Defining system
 
     for package in selected {
 
-        let sys = checks::get_sysinfo();
-        println!("{:?}", sys);
+
+
         // download each package                         link                 path
         let downloaded_file_path = download_files(package.sourcecode_link , &tmp_dir)
             .expect(format!("Failed to download the {} package", package.name).as_str());
@@ -83,7 +100,7 @@ fn main() -> Result<(), io::Error> {
 
         env::set_current_dir(&working_path);
 
-        extract_package(package.extract_method, &downloaded_file_path, &working_path.join(package.name))
+        extract_package(&package.extract_method, &downloaded_file_path, &working_path.join(package.name))
             .expect(format!("Failed to extract the {} package", package.name).as_str());
 
 
@@ -93,12 +110,18 @@ fn main() -> Result<(), io::Error> {
         env::set_current_dir(&working_path.join(package.name));
 
 
-        pause();
-        install_package(package.instal_method);
+        // pause();
+        install_package(&package.instal_method);
         println!("package installed");
 
+        println!("Enabling services where needed");
+
+        install_services(&package, &sysinfo);
+
+
+
         
-    }
+    };
 
 
 
@@ -107,6 +130,23 @@ fn main() -> Result<(), io::Error> {
 }
 
 
+fn install_services(package: &Package, sysinfo: &SysInfo) -> Option<Result<Output, io::Error>> {
+
+    if let Some(service) = package.service {
+        use checks::cmd;
+        use InitSystem::*;
+        let output = match sysinfo.init_system {
+            Systemd => cmd(format!("sudo systemctl enable {service} && sudo systemctl start {service}",service = service).as_str()),
+            Openrc => cmd(format!("sudo rc-update add {service} default && sudo rc-service {service} start",service = service).as_str()),
+            Runit => cmd(format!("ln -s /etc/sv/{service} /var/service/ && sudo sv start {service}",service = service).as_str()),
+            S6 => cmd(format!("ln -s /etc/s6/{service} /etc/s6/service/ && sudo s6-svc -u /etc/s6/service/{service}",service = service).as_str()),
+            Sysvinit => cmd(format!("sudo update-rc.d {service} defaults && sudo service {service} start",service = service).as_str()),
+            Upstart => cmd(format!("sudo start {service}",service = service).as_str()),
+        };
+        return Some(output)
+    }
+    None
+}
 
 
 
