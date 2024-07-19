@@ -3,19 +3,15 @@
 
 use tempdir::TempDir;
 
-
 use std::io;
 use std::env;
 
-use itjustworks::download::*;
-use itjustworks::extract::*;
 use itjustworks::packages::*;
-
-
-
+use itjustworks::checks::SysInfo;
+use itjustworks::extract::extract_package;
+use itjustworks::download::download_files;
 use itjustworks::install::compile::install_package;
 use itjustworks::install::enable_service::enable_services;
-use itjustworks::checks::SysInfo;
 
 fn main() -> Result<(), io::Error> {
 
@@ -75,7 +71,6 @@ fn main() -> Result<(), io::Error> {
     let selected :Vec<Package> = vec![];
 
 
-
     // Create a directory inside of `std::env::temp_dir()`, named with
     // the prefix "ItJustWorks".
     let tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
@@ -92,33 +87,31 @@ fn main() -> Result<(), io::Error> {
 
 
         let working_path = tmp_dir.path();
-
         let _ = env::set_current_dir(&working_path);
+
 
         extract_package(&package.extract_method, &downloaded_file_path, &working_path.join(package.name))
             .expect(format!("Failed to extract the {} package", package.name).as_str());
 
-
-        println!("extracted package");
 
         //change directory to the extracted package
         let _ = env::set_current_dir(&working_path.join(package.name));
 
 
         // pause();
-        install_package(&package.instal_method);
+        install_package(&package.instal_method)
+            .expect(format!("Failed to install the {} package", package.name).as_str());
 
-        println!("Enabling services where needed");
 
-        enable_services(&package, &sysinfo);
-
+        // unwrap potential error if it returns any
+        if let Some(service) = package.service {
+        enable_services(&service, &sysinfo)
+            .expect(format!("Failed to enable service for {}", package.name).as_str());
+        }
 
 
         
     };
-
-
-
     Ok(())
 }
 
@@ -137,5 +130,4 @@ fn pause() {
     std::io::stdin()
         .read_line(&mut buffer)
         .expect("Failed to read line");
-
 }
