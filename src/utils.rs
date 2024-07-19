@@ -1,8 +1,6 @@
-use std::io;
-use std::io::{ErrorKind, Error};
 use std::process::{Output,Command};
 
-pub fn cmd(command: &str) -> Result<String, io::Error> {
+pub fn cmd(command: &str) -> Result<String, String> {
     let output = Command::new("sh")
         .arg("-c")
         .arg(command)
@@ -13,10 +11,9 @@ pub fn cmd(command: &str) -> Result<String, io::Error> {
             if status.success() {
                 Ok(String::from_utf8_lossy(&stdout).into_owned())
             } else {
-                let error_message = String::from_utf8_lossy(&stderr).into_owned();
-                Err(Error::new(ErrorKind::Other, error_message))
+                Err(String::from_utf8_lossy(&stderr).into_owned())
             }
         }
-        Err(e) => Err(Error::new(ErrorKind::Other, e.to_string())),
+        Err(e) => Err(e.to_string()),
     }
 }

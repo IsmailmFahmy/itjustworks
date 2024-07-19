@@ -19,7 +19,7 @@ use itjustworks::checks::SysInfo;
 
 fn main() -> Result<(), io::Error> {
 
-    // Testing with libnotify package
+    // ----------------- Testing packages -----------------
     let libnotify = Package {   
         name: "libnotify",
         sourcecode_link: "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz",
@@ -66,9 +66,13 @@ fn main() -> Result<(), io::Error> {
 
 
     };
-    // todo!("select_packages");
+    // ----------------------------------------------------
 
-    let selected = vec![cups];
+
+
+
+    // todo!("select_packages using ratatui");
+    let selected :Vec<Package> = vec![];
 
 
 
@@ -103,7 +107,6 @@ fn main() -> Result<(), io::Error> {
 
         // pause();
         install_package(&package.instal_method);
-        println!("package installed");
 
         println!("Enabling services where needed");
 
@@ -113,7 +116,6 @@ fn main() -> Result<(), io::Error> {
 
         
     };
-
 
 
 

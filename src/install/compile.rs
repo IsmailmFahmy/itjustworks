@@ -1,17 +1,16 @@
 use crate::packages::InstallMethodEnum;
-use crate::error_handelling::handle;
 use std::process::Command;
 
 
 
-pub fn install_package(method: &InstallMethodEnum) -> Result<(), String> {
+pub fn install_package(method: &InstallMethodEnum) -> Result<String, String> {
     // todo!("Make an error type for Install package function");
     use InstallMethodEnum::*;
     match method {
-        MakeInstall => handle(make_install(), false),
-        AutoGen => handle(autogen_install(), false)
+        MakeInstall => make_install()?,
+        AutoGen => autogen_install()?
     };
-    Ok(())
+    Ok(String::from("Installed successfully"))
 }
 
 

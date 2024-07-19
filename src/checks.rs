@@ -1,9 +1,4 @@
-#![allow(dead_code)]
-#![allow(unused)]
-extern crate os_type;
-use std::process::{Output, Command, exit};
 use std::path::Path;
-use std::io;
 use crate::utils::cmd;
 
 // ----------------------- Structs -----------------------
@@ -11,7 +6,6 @@ use crate::utils::cmd;
 
 #[derive(Debug)]
 pub struct SysInfo {
-    pub distrobution : os_type::OSType,
     pub init_system : InitSystem,
     pub dependencies_installed : bool,
 
@@ -35,7 +29,6 @@ pub enum InitSystem {
 impl SysInfo {
     pub fn new() -> Self {
         SysInfo {
-            distrobution : os_type::current_platform().os_type,
             init_system : Self::check_init().unwrap(),
             dependencies_installed : Self::check_dependencies()
         }
@@ -73,48 +66,18 @@ impl SysInfo {
     }
     fn check_dependencies() -> bool {
         // Array of dependencies
-        let required_commands = ["potee","gcc", "make", "pkg-config"];
+        let required_commands = ["gcc", "make", "pkg-config","potee"];
 
         // if the command for this dependency doesn't exist, print an error
         for command in required_commands.iter() {
-            if cmd(format!("command -v {}", command).as_str())
-                .is_ok() == false
-            {
+            if cmd(format!("command -v {}", command).as_str()).is_err() {
                 eprintln!("Error: Required command '{}' not found. Please install it and try again.", command);
-                return false;
-            }
+                false;
+            }       
         }
         true
     }
 
-
 }
-
-
-
-
-
-
-
-// ========
-
-// pub fn cmd(command: &str) -> Result<Output, io::Error>{
-//     let output = Command::new("sh")
-//         .arg("-c")
-//         .arg(command)
-//         .
-//         .output()
-//         .map_err(|e| format!("Failed to Execute shell command: \t {}", e)); // format error
-//
-//
-//     if output.status.success() {
-//         // Turn the result into a readable string
-//         Ok(String::from_utf8_lossy(output.stdout))
-//     } else {
-//         Err(String::from_utf8_lossy(output.stderr))
-//     }
-//
-// }
-
 
 

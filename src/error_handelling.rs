@@ -1,5 +1,3 @@
-
-
 // Matches and prints errors
 pub fn handle(result: Result<String, String>, print_if_success: bool) {
 
@@ -9,9 +7,6 @@ pub fn handle(result: Result<String, String>, print_if_success: bool) {
             println!("Command output: {}", output)
             }
         },
-
         Err(error) => panic!("Error running command: \n{}\n", error),
     }
-    
-
 }
