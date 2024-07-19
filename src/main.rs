@@ -1,31 +1,21 @@
-#![allow(dead_code)]
-#![allow(unused)]
+// #![allow(dead_code)]
+// #![allow(unused)]
 
 use tempdir::TempDir;
 
-mod error_handelling;
 
-use std::fs::File;
-use std::path::{Path, PathBuf};
 use std::io;
 use std::env;
 
-pub mod download;
-use download::*;
-
-mod extract;
-use extract::*;
-
-mod checks;
-
-mod packages;
-use packages::*;
+use itjustworks::download::*;
+use itjustworks::extract::*;
+use itjustworks::packages::*;
 
 
-mod install;
-use crate::install::compile::install_package;
-use crate::install::enable_service::enable_services;
-use crate::checks::SysInfo;
+
+use itjustworks::install::compile::install_package;
+use itjustworks::install::enable_service::enable_services;
+use itjustworks::checks::SysInfo;
 
 fn main() -> Result<(), io::Error> {
 
@@ -84,7 +74,7 @@ fn main() -> Result<(), io::Error> {
 
     // Create a directory inside of `std::env::temp_dir()`, named with
     // the prefix "ItJustWorks".
-    let mut tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
+    let tmp_dir = TempDir::new("ItJustWorks").expect("could not create temporary directory");
 
     let sysinfo = SysInfo::new(); // Defining system
 
@@ -99,7 +89,7 @@ fn main() -> Result<(), io::Error> {
 
         let working_path = tmp_dir.path();
 
-        env::set_current_dir(&working_path);
+        let _ = env::set_current_dir(&working_path);
 
         extract_package(&package.extract_method, &downloaded_file_path, &working_path.join(package.name))
             .expect(format!("Failed to extract the {} package", package.name).as_str());
@@ -108,7 +98,7 @@ fn main() -> Result<(), io::Error> {
         println!("extracted package");
 
         //change directory to the extracted package
-        env::set_current_dir(&working_path.join(package.name));
+        let _ = env::set_current_dir(&working_path.join(package.name));
 
 
         // pause();

@@ -4,8 +4,10 @@ extern crate os_type;
 use std::process::{Output, Command, exit};
 use std::path::Path;
 use std::io;
+use crate::utils::cmd;
 
 // ----------------------- Structs -----------------------
+
 
 #[derive(Debug)]
 pub struct SysInfo {
@@ -63,28 +65,20 @@ impl SysInfo {
             }
 
             // For each init system, if it's respective command exists, then thats the init system
-            if cmd(command)
-                .unwrap()
-                    .status
-                    .success() == true {
-                        return Ok(system)
+            if cmd(command).is_ok() == true {
+                return Ok(system)
             }         
         }
         Err("Could not identify InitSystem. Services will not be enabled. Please enable them manually".to_string())
     }
     fn check_dependencies() -> bool {
         // Array of dependencies
-        let required_commands = ["gcc", "make", "pkg-config"];
+        let required_commands = ["potee","gcc", "make", "pkg-config"];
 
         // if the command for this dependency doesn't exist, print an error
         for command in required_commands.iter() {
-            if Command::new("sh")
-                .arg("-c")
-                    .arg(format!("command -v {}", command))
-                    .output()
-                    .expect("Failed to check for command")
-                    .status
-                    .success() == false
+            if cmd(format!("command -v {}", command).as_str())
+                .is_ok() == false
             {
                 eprintln!("Error: Required command '{}' not found. Please install it and try again.", command);
                 return false;
@@ -104,13 +98,23 @@ impl SysInfo {
 
 // ========
 
-pub fn cmd(command: &str) -> Result<Output, io::Error>{
-    Command::new("sh")
-        .arg("-c")
-        .arg(command)
-        .output()
-
-}
+// pub fn cmd(command: &str) -> Result<Output, io::Error>{
+//     let output = Command::new("sh")
+//         .arg("-c")
+//         .arg(command)
+//         .
+//         .output()
+//         .map_err(|e| format!("Failed to Execute shell command: \t {}", e)); // format error
+//
+//
+//     if output.status.success() {
+//         // Turn the result into a readable string
+//         Ok(String::from_utf8_lossy(output.stdout))
+//     } else {
+//         Err(String::from_utf8_lossy(output.stderr))
+//     }
+//
+// }
 
 
 

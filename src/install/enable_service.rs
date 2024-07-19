@@ -1,14 +1,13 @@
 
 use std::io;
-use std::process::Output;
 
 use crate::packages::Package;
-use crate::checks::cmd;
 use crate::checks::{InitSystem, SysInfo};
+use crate::utils::cmd;
 
 use InitSystem::*;
 
-pub fn enable_services(package: &Package, sysinfo: &SysInfo) -> Option<Result<Output, io::Error>> {
+pub fn enable_services(package: &Package, sysinfo: &SysInfo) -> Option<Result<String, io::Error>> {
 
     if let Some(service) = package.service {
         let output = match sysinfo.init_system {
