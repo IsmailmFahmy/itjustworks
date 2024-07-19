@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::checks::{InitSystem, SysInfo};
 use tempdir::TempDir;
 
 mod error_handelling;
@@ -10,7 +9,6 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::io;
 use std::env;
-use std::process::Output;
 
 pub mod download;
 use download::*;
@@ -23,8 +21,11 @@ mod checks;
 mod packages;
 use packages::*;
 
+
 mod install;
 use crate::install::compile::install_package;
+use crate::install::enable_service::enable_services;
+use crate::checks::SysInfo;
 
 fn main() -> Result<(), io::Error> {
 
@@ -116,7 +117,7 @@ fn main() -> Result<(), io::Error> {
 
         println!("Enabling services where needed");
 
-        install_services(&package, &sysinfo);
+        enable_services(&package, &sysinfo);
 
 
 
@@ -130,23 +131,6 @@ fn main() -> Result<(), io::Error> {
 }
 
 
-fn install_services(package: &Package, sysinfo: &SysInfo) -> Option<Result<Output, io::Error>> {
-
-    if let Some(service) = package.service {
-        use checks::cmd;
-        use InitSystem::*;
-        let output = match sysinfo.init_system {
-            Systemd => cmd(format!("sudo systemctl enable {service} && sudo systemctl start {service}",service = service).as_str()),
-            Openrc => cmd(format!("sudo rc-update add {service} default && sudo rc-service {service} start",service = service).as_str()),
-            Runit => cmd(format!("ln -s /etc/sv/{service} /var/service/ && sudo sv start {service}",service = service).as_str()),
-            S6 => cmd(format!("ln -s /etc/s6/{service} /etc/s6/service/ && sudo s6-svc -u /etc/s6/service/{service}",service = service).as_str()),
-            Sysvinit => cmd(format!("sudo update-rc.d {service} defaults && sudo service {service} start",service = service).as_str()),
-            Upstart => cmd(format!("sudo start {service}",service = service).as_str()),
-        };
-        return Some(output)
-    }
-    None
-}
 
 
 
