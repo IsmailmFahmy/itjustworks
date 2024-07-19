@@ -1,4 +1,4 @@
-Ever wanted a simple Linux install to have all the basic functionality working without installing and configuring every package individually? Well this is where this script comes in to rescue the day.
+Ever wanted a simple Linux install to have all the basic functionality working without installing and configuring every package individually? Well this is where this script comes in make life easier.
 
 This Rust project is aimed to take a headless fresh install and configure basic elements like audio and printers.
 
@@ -17,6 +17,22 @@ This project is partially inspired by Chris Titus's Wintool.\
 5. package is installed (make install / etc)
 6. service is enabled if the package has any
 
+# File Structure
+```
+src/
+├── checks.rs               => init sys / dependencies check
+├── download.rs             => Downloads files to tmp dir
+├── error_handelling.rs     => func to match result types
+├── extract.rs              => funcs to extract zip, tar.gz & tar.xz
+├── install
+│   ├── compile.rs          => autogen, configure, make install
+│   ├── enable_service.rs   => func to enables services depending on init sys
+│   └── mod.rs
+├── lib.rs
+├── main.rs
+├── packages.rs             => defines package struct
+└── utils.rs                => for funcs used in more than one module
+```
 
 # Things To Tackle
 - [x] Checking Dependencies
