@@ -27,6 +27,7 @@ pub enum InitSystem {
 
 // ----------------------- Impl Block -----------------------
 impl SysInfo {
+    // Constructor Method
     pub fn new() -> Self {
         SysInfo {
             init_system : Self::check_init().unwrap(),
@@ -34,7 +35,7 @@ impl SysInfo {
         }
     }
 
-
+    // Identify Init System
     fn check_init() -> Result<InitSystem, String> {
         use std::collections::HashMap;
 
@@ -47,7 +48,6 @@ impl SysInfo {
             (InitSystem::Runit, "/etc/sv"),
             (InitSystem::Upstart, "start"),
         ]);
-
 
         for (system, command) in init_systems {
             // If the path to the services exists, return that service
@@ -64,16 +64,17 @@ impl SysInfo {
         }
         Err("Could not identify InitSystem. Services will not be enabled. Please enable them manually".to_string())
     }
+
+
     fn check_dependencies() -> bool {
         // Array of dependencies
-        let required_commands = ["gcc", "make", "pkg-config","potee"];
+        let required_commands = ["gcc", "make", "pkg-config"];
 
-        // if the command for this dependency doesn't exist, print an error
+        // if the command for this dependency doesn't exist, print and panic
         for command in required_commands.iter() {
             if cmd(format!("command -v {}", command).as_str()).is_err() {
-                eprintln!("Error: Required command '{}' not found. Please install it and try again.", command);
-                false;
-            }       
+                panic!("Error: Required command '{}' not found. Please install it and try again.", command);
+            }
         }
         true
     }

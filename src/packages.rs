@@ -5,7 +5,6 @@ pub enum InstallMethodEnum {
 }
 
 pub enum ExtractMethodEnum {
-    // Git,
     Targz,
     Tarxz,
     Zip
